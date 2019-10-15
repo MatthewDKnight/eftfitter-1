@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6561/branches/102x-debug/data/lhc-hxswg/eft/HEL
+END
+stage1_xs_LHCHXSWG-INT-2017-001.txt
+K 25
+svn:wc:ra_dav:version-url
+V 134
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6559/branches/102x-debug/data/lhc-hxswg/eft/HEL/stage1_xs_LHCHXSWG-INT-2017-001.txt
+END
+decay.txt
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6557/branches/102x-debug/data/lhc-hxswg/eft/HEL/decay.txt
+END
+fixedproc_binuncertainties.txt
+K 25
+svn:wc:ra_dav:version-url
+V 129
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6557/branches/102x-debug/data/lhc-hxswg/eft/HEL/fixedproc_binuncertainties.txt
+END
+stage0_binuncertainties.txt
+K 25
+svn:wc:ra_dav:version-url
+V 126
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6557/branches/102x-debug/data/lhc-hxswg/eft/HEL/stage0_binuncertainties.txt
+END
+pois.txt
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6561/branches/102x-debug/data/lhc-hxswg/eft/HEL/pois.txt
+END
+stage1_1_binuncertainties.txt
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6557/branches/102x-debug/data/lhc-hxswg/eft/HEL/stage1_1_binuncertainties.txt
+END
+stage1_binuncertainties.txt
+K 25
+svn:wc:ra_dav:version-url
+V 126
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6557/branches/102x-debug/data/lhc-hxswg/eft/HEL/stage1_binuncertainties.txt
+END
+stage0_xs.txt
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6561/branches/102x-debug/data/lhc-hxswg/eft/HEL/stage0_xs.txt
+END
+stage1_1_xs.txt
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6561/branches/102x-debug/data/lhc-hxswg/eft/HEL/stage1_1_xs.txt
+END
+stage1_xs.txt
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/cms-analysis/HiggsAnalysis-CombinedLimit/!svn/ver/6561/branches/102x-debug/data/lhc-hxswg/eft/HEL/stage1_xs.txt
+END
