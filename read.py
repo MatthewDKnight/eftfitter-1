@@ -56,9 +56,11 @@ def new_get_x(vals=np.zeros(shape=(39, 2)).tolist(), MINDEX=0):
 		for term in scaling_functions_decomposed[y]:
 			print('term; '+term)
 			for z in range(len(EFT_param_names)):
-				if EFT_param_names[z]+' ' in term:
-					print('EFT_param; '+EFT_param_names[z])
-					if not any(x in term.replace(EFT_param_names[z], '', 1) for x in EFT_param_names):
+				if ' '+EFT_param_names[z]+' ' in term:
+					#print('EFT_param; '+EFT_param_names[z])
+					if term.count('*') == 1:
+						print('EFT_param; '+EFT_param_names[z])
+					#if not any(x in term.replace(EFT_param_names[z], '', 1) for x in EFT_param_names):
 						if '+ ' in term:
 							print('1Dnew_entry; '+term.replace(' * ' +EFT_param_names[z], '', 1).replace('+ ', '', 1))
 							new_entry=float(term.replace( ' * '+EFT_param_names[z], '', 1).replace('+ ', '', 1))
@@ -69,12 +71,12 @@ def new_get_x(vals=np.zeros(shape=(39, 2)).tolist(), MINDEX=0):
 							print('1Dnew_entry; '+term.replace(' * '+EFT_param_names[z], '', 1))
 							new_entry=float(term.replace(' * '+EFT_param_names[z], '', 1)) 
 						A_matrix[z][y]=new_entry
-					else:
+					elif term.count('*') == 2:
 						EFT_param_1=EFT_param_names[z]
 						print('EFT_param_1; '+EFT_param_1)
 						term=term.replace(' * '+EFT_param_names[z], '', 1)
 						for a in range(len(EFT_param_names)):
-							if EFT_param_names[a]+' ' in term:
+							if ' '+EFT_param_names[a]+' ' in term:
 								EFT_param_2=EFT_param_names[a]
 								print('EFT_param_2; '+EFT_param_2)
 								if '+ ' in term:
@@ -90,7 +92,7 @@ def new_get_x(vals=np.zeros(shape=(39, 2)).tolist(), MINDEX=0):
 						
 	
 
-	print(B_matrix)
+	print([A_matrix[i][0] for i in range(len(A_matrix))])
 						
 						
 
