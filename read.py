@@ -72,7 +72,8 @@ def new_get_x(vals=np.zeros(shape=(39, 2)).tolist(), MINDEX=0):
 		EFT_param_names.append(i.split('_')[0])
 
 	"""
-	
+        cWW and cB do not appear independently in the list of parameters
+	but they do in the equations. 	
 	"""
 	index1= EFT_param_names.index('cWWMinuscB')
 	index2= EFT_param_names.index('cWWPluscB')
@@ -84,17 +85,20 @@ def new_get_x(vals=np.zeros(shape=(39, 2)).tolist(), MINDEX=0):
         EFT_param_names[index1]='cWW'
         EFT_param_names[index2]='cB'
 
-	#print(EFT_param_names)	
+	#print(EFT_param_names)
 
+	#split every row into the individual terms like "-1 * cG "
 	scaling_functions_decomposed = []
 	for j in rows:
 		split_row = splitRow(j)
+		print(split_row[0])
 		del split_row[0] #removes ggH:1 bit
 		scaling_functions_decomposed.append(split_row)
 		print(split_row)
 	
-	#print(scaling_functions_decomposed)
+	#print(scaling_functions_decomposed)                                   
 
+	#Makes the A and B matrices
 	for y in range(len(scaling_functions_decomposed)): #for each bin
 		for term in scaling_functions_decomposed[y]: #for each term in equation for this bin
 			#print(term)
@@ -126,21 +130,85 @@ def new_get_x(vals=np.zeros(shape=(39, 2)).tolist(), MINDEX=0):
 				B_matrix[param_index1][param_index2][y] = coeff/10**(scaling1+scaling2)
 				B_matrix[param_index2][param_index1][y] = coeff/10**(scaling1+scaling2) #make it symmetric
 			else:
-				print("Something went wrong")	
+				print("Something went wrong")                                                               	
 
 	return A_matrix, B_matrix
-				
-A, B = new_get_x()		
-						
 
+def initialiseScalingFunctions(PARAMS, filenames):
+	"""
+	PARAMS is the dictionary of EFT parameters from
+	the EFT config file.
+	This function will read in the equation files and 
+	initialise the functions dictionary with the A and B
+	matrices for each bin.
+	"""
+	functions = {}
 
+	#read in text file, row by r
+	rows = []
+	for filename in filenames:
+	        with open("equations/%s"%filename, "r") as file:
+        		for row in file:
+        			rows.append(row)
+                                                                               
+        EFT_param_list=[] #contains scaling bit plus name
+        EFT_param_names=[] #list of names
+        
+        #create a list of the EFT parameter names and their scaling factors
+        for i in PARAMS.keys():
+		#try to split key into name and scaling part
+		split_key = i.split("_")
+		name = split_key[0]
+		if len(split_key) == 2: #if there was a scaling factor
+			scaling_factor = split_key[1]
+			scaling_factor = int(scaling_factor.strip("x"))
+		else: #if no scaling factor
+			scaling_factor = 0	
+		EFT_param_list.append([name, scaling_factor])
+        	EFT_param_names.append(name)
+                                                                               
+        """
+        cWW and cB do not appear independently in the list of parameters
+        but they do in the equations. 	
+        """
+        index1= EFT_param_names.index('cWWMinuscB')
+        index2= EFT_param_names.index('cWWPluscB')
+        
+        EFT_param_names[index1]='cWW'
+        EFT_param_names[index2]='cB'
+                                                                                                                                           for row in rows:
+		#initialise empty A and B matrices
+		A = np.zeros(len(PARAMS))
+		B = np.zeros((len(PARAMS), len(PARAMS)))
 
+		terms = splitRow(row)
+		bin_name = terms[0].split(":")[0] #removes the ":1 " at end of string
+		del terms[0] #remove "ggH:1" type bit from list of terms
 	
+		#for term in equation	
+		for term in terms:                                                                                    		
+                        coeff, params = decomposeTerm(term)
+		                                                                                                                
+                        if len(params) == 1: #if its an A term
+                        	param_index = EFT_param_names.index(params[0])
+                        	scaling = EFT_param_list[param_index][1] #what to scale the terms by "x02"
+                        	A[param_index] = coeff/10**scaling
+                        elif len(params) == 2: #if its a B term
+                        	param_index1 = EFT_param_names.index(params[0])
+                       		scaling1 = EFT_param_list[param_index1][1] #what to scale the terms by "x02"
+                        
+                        	param_index2 = EFT_param_names.index(params[1])
+                       		scaling2 = EFT_param_list[param_index2][1] #what to scale the terms by "x02"
+                                                                                                                            
+                        	B[param_index1][param_index2] = coeff/10**(scaling1+scaling2)
+                        	B[param_index2][param_index1] = coeff/10**(scaling1+scaling2) #make it symmetric
+                        else:
+                        	print("Something went wrong")
+		functions[bin_name] = [A, B]
+	return functions
 
+A, B = new_get_x()
 
-
-
-	
-
-
-	
+filenames = ["stage0_xs.txt", "decay.txt"]
+functions = initialiseScalingFunctions(PARAMS, filenames)
+                                                               
