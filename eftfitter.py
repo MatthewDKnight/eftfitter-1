@@ -130,7 +130,7 @@ class eft_fitter:
     return [x[1][2] for x in self.X.items()]
   """
 
-  def get_x(self,vals,MINDEX,include_names=False):
+  def get_x(self,vals,MINDEX, functions, include_names=False):
     """
     Find STXS predictions given the EFT parameters from the scaling functions.
     """
@@ -139,8 +139,9 @@ class eft_fitter:
     #if VERB: print " Setting following (to recalculate STXS bins) --> " , vals
     for v in vals:
       self.EFT[v[0]][1] = v[1]
-      self.w.var(v[0]).setVal(v[1])
+     # self.w.var(v[0]).setVal(v[1])
 
+    EFT_vector=[self.EFT[i][1] for i in self.EFT.items]
     # note that some models may use a different naming for the SCALING function string (eg stage1 vs 1.1)
     model = self.MODELS[MINDEX]
     old_scalefunctionstr = self.scalefunctionstr
@@ -149,7 +150,7 @@ class eft_fitter:
     except:
      pass
 
-    emptySet = r.RooArgSet()
+    #emptySet = r.RooArgSet()
     for x in model.X.items():
       names = x[1][0]
       if not len(names) :
@@ -165,8 +166,14 @@ class eft_fitter:
 	  Byy = name.split("BR_")[2]
 	  #print "BR scaling ->", "%s_BR_%s"%(self.scalefunctionstr,Bxx)
 	  #print "BR scaling ->", "%s_BR_%s"%(self.scalefunctionstr,Byy)
-	  nom  = self.w.function("%s_BR_%s"%(self.scalefunctionstr,Bxx)).getVal(r.RooArgSet())
-	  dnom = self.w.function("%s_BR_%s"%(self.scalefunctionstr,Byy)).getVal(r.RooArgSet())
+	 # nom  = self.w.function("%s_BR_%s"%(self.scalefunctionstr,Bxx)).getVal(r.RooArgSet())
+	  #dnom = self.w.function("%s_BR_%s"%(self.scalefunctionstr,Byy)).getVal(r.RooArgSet())
+	  A_vector_Bxx=functions[Bxx][0]
+          B_matrix_Bxx=functions[Bxx][1]
+          A_vector_Byy=functions[Byy][0]
+          B_vector_byy=functions[Bxx][1]
+	  nom = 1+np.dot(A_vector_Bxx, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_Bxx, EFT_vector))
+	  denom = 1+np.dot(A_vector_Byy, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_Bxx, EFT_vector))
 	  sc = nom/dnom
 	#else: sc = self.w.function("%s_%s_%s_13TeV"%(self.scalefunctionstr,name,model.decay)).getVal(r.RooArgSet())
 	else:
@@ -174,28 +181,49 @@ class eft_fitter:
 	  else: scaling_str = "%s_%s_13TeV"%(self.scalefunctionstr,name)
 
 	  # 1 - Look in the existing functions for it
-	  if scaling_str not in self.functions.keys():
-	   if (self.w.function(scaling_str)!=None):
-	     self.functions[scaling_str] = self.w.function(scaling_str)
-	   else:
+	  #if scaling_str not in self.functions.keys():
+	   #if (self.w.function(scaling_str)!=None):
+	    # self.functions[scaling_str] = self.w.function(scaling_str)
+	    #else:
 	     # Look for the splitting of prod * dec and make a new function
-	     print "Will need to make the scaler for ", name.split("_")
-	     prod_name  = "%s_%s"%(self.scalefunctionstr,"_".join(name.split("_")[0:-1]))
-	     decay_name = "%s_BR_%s"%(self.scalefunctionstr,name.split("_")[-1])
-	     print " Production name = ", prod_name
-	     print " Decay name = ", decay_name
-	     if (self.w.function(prod_name)==None):  sys.exit("Error - couldn't find any way to make scaling function for %s_%s"%(name,model.decay))
-	     if (self.w.function(decay_name)==None): sys.exit("Error - couldn't find any way to make scaling function for %s_%s"%(name,model.decay))
-	     print "Creating scaling process %s in model %s --> "%(name,model), scaling_str
-	     self.w.factory("prod::%s(%s,%s)"%(scaling_str,prod_name,decay_name))
-	     self.functions[scaling_str] = self.w.function(scaling_str)
-	  #print "Looking for function -> ",scaling_str
-          sc = self.functions[scaling_str].getVal(emptySet)
+	    # print "Will need to make the scaler for ", name.split("_")
+	    # prod_name  = "%s_%s"%(self.scalefunctionstr,"_".join(name.split("_")[0:-1]))
+	    # decay_name = "%s_BR_%s"%(self.scalefunctionstr,name.split("_")[-1])
+            # print " Production name = ", prod_name
+	    # print " Decay name = ", decay_name
+	    # if (self.w.function(prod_name)==None):  sys.exit("Error - couldn't find any way to make scaling function for %s_%s"%(name,model.decay))
+	    # if (self.w.function(decay_name)==None): sys.exit("Error - couldn't find any way to make scaling function for %s_%s"%(name,model.decay))
+	    # print "Creating scaling process %s in model %s --> "%(name,model), scaling_str
+	    # self.w.factory("prod::%s(%s,%s)"%(scaling_str,prod_name,decay_name))
+	    # self.functions[scaling_str] = self.w.function(scaling_str)
+	     #print "Looking for function -> ",scaling_str
+             #sc = self.functions[scaling_str].getVal(emptySet)
+           split_name=name.split('_')
+           if split_names[-1] in self.decay_names:
+          	 prod_name='_'.join(split_name[:-1])
+          	 decay_name=split_names[-1]
+		 A_vector_prod=functions[prod_name][0]
+		 B_matrix_prod=functions[prod_name][1]
+                 A_vector_decay=functions[decay_name][0]
+                 B_vector_decay=functions[decay_name][1]
+                 prod = 1+np.dot(A_vector_prod, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_prod, EFT_vector))
+                 decay =1+np.dot(A_vector_decay, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_decay, EFT_vector))
+                 sc = prod*decay
+
+
+           elif name in functions.keys():
+		A_vector=functions[name][0]
+		B_matrix=functions[name][1]
+		sc= 1+np.dot(A_vector, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix, EFT_vector))
+
+           else:
+		print("Could not extract production/decay names")
 
 	#sc = self.w.function("%s_%s_%s_13TeV"%(self.scalefunctionstr,name,model.decay)).getVal(r.RooArgSet())  #-> Back to here for EFT part!
 	#sc = self.w.function("%s_%s_13TeV"%(self.scalefunctionstr,name)).getVal(r.RooArgSet())
 	#print " at params ", vals , " ....... "
 	#print " function ", scaling_str, " = ", sc
+        
 	tsc+=weight*sc
       model.X[x[0]][1]=tsc
     self.scalefunctionstr = old_scalefunctionstr
