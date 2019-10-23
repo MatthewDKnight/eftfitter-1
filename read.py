@@ -134,7 +134,7 @@ def new_get_x(vals=np.zeros(shape=(39, 2)).tolist(), MINDEX=0):
 
 	return A_matrix, B_matrix
 
-def initialiseScalingFunctions(PARAMS, filenames):
+def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.txt"]):
 	"""
 	PARAMS is the dictionary of EFT parameters from
 	the EFT config file.
@@ -207,8 +207,9 @@ def initialiseScalingFunctions(PARAMS, filenames):
 		functions[bin_name] = [A, B]
 	return functions
 
-A, B = new_get_x()
+if __name__=="__main__":
+	A, B = new_get_x()
 
-filenames = ["stage0_xs.txt", "decay.txt"]
-functions = initialiseScalingFunctions(PARAMS, filenames)
+	filenames = ["stage0_xs.txt", "decay.txt"]
+	functions = initialiseScalingFunctions(PARAMS, filenames)
                                                                
