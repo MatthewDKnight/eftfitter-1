@@ -2,6 +2,7 @@
 from scipy.optimize import minimize
 from scipy import linalg
 import array,numpy,sys
+import numpy as np
 
 import matplotlib
 matplotlib.use('Agg')
@@ -13,7 +14,7 @@ import ROOT as r
 
 from read import initialiseScalingFunctions
 
-VERB=False #print some stuff?
+VERB=True #print some stuff?
 NSCANPOINTS=60 #determines granularity of the scan
 
 class eft_fitter:
@@ -133,10 +134,13 @@ class eft_fitter:
     return [x[1][2] for x in self.X.items()]
   """
 
-  def get_x(self,vals,MINDEX, functions, include_names=False):
+  def get_x(self,vals,MINDEX, include_names=False):
     """
     Find STXS predictions given the EFT parameters from the scaling functions.
     """
+
+    print(self.EFT.keys())
+    print("Length of keys:" ,len(self.EFT.keys()))
 
     # This function should really not define how the scaling is done -> Project for MSci to generalise
     #if VERB: print " Setting following (to recalculate STXS bins) --> " , vals
@@ -144,9 +148,9 @@ class eft_fitter:
       self.EFT[v[0]][1] = v[1]
      # self.w.var(v[0]).setVal(v[1])
 
-    EFT_vector=[self.EFT[i][1] for i in self.EFT.items]
-    index1=self.EFT.index('cWWMinuscB_x02')
-    index2=self.EFT.index('cWWPluscB_x03')
+    EFT_vector=[self.EFT[i][1] for i in self.EFT.keys()]
+    index1=self.EFT.keys().index('cWWMinuscB_x02')
+    index2=self.EFT.keys().index('cWWPluscB_x03')
     cWW=0.5*(EFT_vector[index1]+EFT_vector[index2])
     cB=0.5*(EFT_vector[index2]-EFT_vector[index1])
     EFT_vector[index1]=cWW
@@ -177,12 +181,12 @@ class eft_fitter:
 	  #print "BR scaling ->", "%s_BR_%s"%(self.scalefunctionstr,Byy)
 	 # nom  = self.w.function("%s_BR_%s"%(self.scalefunctionstr,Bxx)).getVal(r.RooArgSet())
 	  #dnom = self.w.function("%s_BR_%s"%(self.scalefunctionstr,Byy)).getVal(r.RooArgSet())
-	  A_vector_Bxx=functions[Bxx][0]
-          B_matrix_Bxx=functions[Bxx][1]
-          A_vector_Byy=functions[Byy][0]
-          B_vector_byy=functions[Bxx][1]
+	  A_vector_Bxx=self.functions[Bxx][0]
+          B_matrix_Bxx=self.functions[Bxx][1]
+          A_vector_Byy=self.functions[Byy][0]
+          B_matrix_Byy=self.functions[Bxx][1]
 	  nom = 1+np.dot(A_vector_Bxx, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_Bxx, EFT_vector))
-	  denom = 1+np.dot(A_vector_Byy, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_Bxx, EFT_vector))
+	  dnom = 1+np.dot(A_vector_Byy, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_Byy, EFT_vector))
 	  sc = nom/dnom
 	#else: sc = self.w.function("%s_%s_%s_13TeV"%(self.scalefunctionstr,name,model.decay)).getVal(r.RooArgSet())
 	else:
@@ -210,21 +214,21 @@ class eft_fitter:
 	     #print "Looking for function -> ",scaling_str
              #sc = self.functions[scaling_str].getVal(emptySet)
           split_name=name.split('_')
-          if split_names[-1] in self.decay_names:
+          if split_name[-1] in self.decay_names:
           	 prod_name='_'.join(split_name[:-1])
-          	 decay_name=split_names[-1]
-		 A_vector_prod=functions[prod_name][0]
-		 B_matrix_prod=functions[prod_name][1]
-                 A_vector_decay=functions[decay_name][0]
-                 B_vector_decay=functions[decay_name][1]
+          	 decay_name=split_name[-1]
+		 A_vector_prod=self.functions[prod_name][0]
+		 B_matrix_prod=self.functions[prod_name][1]
+                 A_vector_decay=self.functions[decay_name][0]
+                 B_matrix_decay=self.functions[decay_name][1]
                  prod = 1+np.dot(A_vector_prod, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_prod, EFT_vector))
                  decay =1+np.dot(A_vector_decay, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_decay, EFT_vector))
                  sc = prod*decay
 
 
           elif name in functions.keys():
-		A_vector=functions[name][0]
-		B_matrix=functions[name][1]
+		A_vector=self.functions[name][0]
+		B_matrix=self.functions[name][1]
 		sc= 1+np.dot(A_vector, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix, EFT_vector))
 
           else:
@@ -238,8 +242,12 @@ class eft_fitter:
 	  tsc+=weight*sc
       model.X[x[0]][1]=tsc
     self.scalefunctionstr = old_scalefunctionstr
-    if include_names: return [(x[0]+"_"+model.decay,x[1][1]) for x in model.X.items()]
-    else : return [x[1][1] for x in model.X.items()]
+    if include_names:
+	 print("Length afterwards", len(self.EFT.keys()))
+	 return [(x[0]+"_"+model.decay,x[1][1]) for x in model.X.items()]
+    else:
+	 print("Length afterwards", len(self.EFT.keys()))
+	 return [x[1][1] for x in model.X.items()]
 
   def get_dx(self):
     return 0 # currently not implemented but would be good to include derivative part (nice project for MSCi students)
@@ -283,7 +291,9 @@ class eft_fitter:
    self.EFT_safe = self.EFT.copy()
 
    #if constrained and params_list:
+   print("Before", self.EFT.keys())
    self.EFT = dict(E for E in filter(lambda x: x[0] not in params_list, self.EFT.items()))
+   print("After", self.EFT.keys())
 
    init_CFG = [[e[0],float(e[1][1])] for e in self.EFT.items()]
    eft_keys = {"eft_keys":[i[0] for i in init_CFG]}
@@ -322,7 +332,7 @@ class eft_fitter:
     """
 
     # 1. Set all the things to 0
-    #print self.calculate_x([0 for i in self.EFT.items()])
+    #rint self.calculate_x([0 for i in self.EFT.items()])
     # 2. remove the useless parameters from the list (user asks for only some of them anyway)
 
     self.EFT = config.PARAMS #parameters dictionary
@@ -364,15 +374,15 @@ class eft_fitter:
      hgr.Write()
 
     #removes EFT parameters that we do not want
-    self.EFT = dict(E for E in filter(lambda x: x[0] in self.EFT_PARAMETERS, self.EFT.items()))
+    #self.EFT = dict(E for E in filter(lambda x: x[0] in self.EFT_PARAMETERS, self.EFT.items()))
 
     #root file contains variables for these EFT parameters???
     #we set the min and max of these variables in the root file from the values in EFT file
-    for v in self.EFT.keys():
-      xmin,xmax = self.EFT[v][0][0],self.EFT[v][0][1]
-      #print "Config parameter ", v, self.w.var(v)
-      self.w.var(v).setMin(xmin)
-      self.w.var(v).setMax(xmax)
+    #for v in self.EFT.keys():
+      #xmin,xmax = self.EFT[v][0][0],self.EFT[v][0][1]
+      #print("Config parameter ", v, self.w.var(v))
+      #self.w.var(v).setMin(xmin)
+      #self.w.var(v).setMax(xmax)
 
     if VERB:
      print "------- Setup state ------>"
