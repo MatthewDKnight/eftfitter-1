@@ -11,6 +11,8 @@ import matplotlib.cm as cm
 
 import ROOT as r
 
+from read import initialiseScalingFunctions
+
 VERB=False #print some stuff?
 NSCANPOINTS=60 #determines granularity of the scan
 
@@ -20,7 +22,8 @@ class eft_fitter:
     self.EFT_PARAMETERS = EFT_PARAMETERS #EFT paramerers of interest
 
     self.MODELS = [] #list of data sets
-    self.functions = {} #dictionary for scaling functions
+    self.functions = initialiseScalingFunctions() #dictionary for scaling functions
+    self.decay_names = ["hmm", "hzg", "hzz", "hbb", "hww", "htt", "hgg", "hgluglu", "hcc", "tot"]
     self.doAsimov=False #sets all predictions to standard model?
 
   def processModel(self,model,decay):
