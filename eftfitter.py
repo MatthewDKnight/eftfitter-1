@@ -142,6 +142,12 @@ class eft_fitter:
      # self.w.var(v[0]).setVal(v[1])
 
     EFT_vector=[self.EFT[i][1] for i in self.EFT.items]
+    index1=self.EFT.index('cWWMinuscB_x02')
+    index2=self.EFT.index('cWWPluscB_x03')
+    cWW=0.5*(EFT_vector[index1]+EFT_vector[index2])
+    cB=0.5*(EFT_vector[index2]-EFT_vector[index1])
+    EFT_vector[index1]=cWW
+    EFT_vector[index2]=cB
     # note that some models may use a different naming for the SCALING function string (eg stage1 vs 1.1)
     model = self.MODELS[MINDEX]
     old_scalefunctionstr = self.scalefunctionstr
@@ -177,8 +183,10 @@ class eft_fitter:
 	  sc = nom/dnom
 	#else: sc = self.w.function("%s_%s_%s_13TeV"%(self.scalefunctionstr,name,model.decay)).getVal(r.RooArgSet())
 	else:
-	  if len(model.decay): scaling_str = "%s_%s_%s_13TeV"%(self.scalefunctionstr,name,model.decay)
-	  else: scaling_str = "%s_%s_13TeV"%(self.scalefunctionstr,name)
+	  if len(model.decay): 
+		scaling_str = "%s_%s_%s_13TeV"%(self.scalefunctionstr,name,model.decay)
+	  else: 
+		scaling_str = "%s_%s_13TeV"%(self.scalefunctionstr,name)
 
 	  # 1 - Look in the existing functions for it
 	  #if scaling_str not in self.functions.keys():
@@ -198,8 +206,8 @@ class eft_fitter:
 	    # self.functions[scaling_str] = self.w.function(scaling_str)
 	     #print "Looking for function -> ",scaling_str
              #sc = self.functions[scaling_str].getVal(emptySet)
-           split_name=name.split('_')
-           if split_names[-1] in self.decay_names:
+          split_name=name.split('_')
+          if split_names[-1] in self.decay_names:
           	 prod_name='_'.join(split_name[:-1])
           	 decay_name=split_names[-1]
 		 A_vector_prod=functions[prod_name][0]
@@ -211,20 +219,20 @@ class eft_fitter:
                  sc = prod*decay
 
 
-           elif name in functions.keys():
+          elif name in functions.keys():
 		A_vector=functions[name][0]
 		B_matrix=functions[name][1]
 		sc= 1+np.dot(A_vector, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix, EFT_vector))
 
-           else:
+          else:
 		print("Could not extract production/decay names")
 
-	#sc = self.w.function("%s_%s_%s_13TeV"%(self.scalefunctionstr,name,model.decay)).getVal(r.RooArgSet())  #-> Back to here for EFT part!
-	#sc = self.w.function("%s_%s_13TeV"%(self.scalefunctionstr,name)).getVal(r.RooArgSet())
-	#print " at params ", vals , " ....... "
-	#print " function ", scaling_str, " = ", sc
+	  #sc = self.w.function("%s_%s_%s_13TeV"%(self.scalefunctionstr,name,model.decay)).getVal(r.RooArgSet())  #-> Back to here for EFT part!
+	  #sc = self.w.function("%s_%s_13TeV"%(self.scalefunctionstr,name)).getVal(r.RooArgSet())
+	  #print " at params ", vals , " ....... "
+	  #print " function ", scaling_str, " = ", sc
         
-	tsc+=weight*sc
+	  tsc+=weight*sc
       model.X[x[0]][1]=tsc
     self.scalefunctionstr = old_scalefunctionstr
     if include_names: return [(x[0]+"_"+model.decay,x[1][1]) for x in model.X.items()]
