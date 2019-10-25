@@ -381,8 +381,8 @@ class eft_fitter:
         ax1.axhline(4., linestyle='--', color='r') # horizontal lines
         ax1.legend(fontsize=9,loc='upper left')
 
-        plt.savefig("Graphs/%s.pdf"%(param))
-        plt.savefig("Graphs/%s.png"%(param))
+        plt.savefig("eftfitter2_Graphs/%s.pdf"%(param))
+        plt.savefig("eftfitter2_Graphs/%s.png"%(param))
 
         plt.clf()
         plt.cla()
@@ -405,8 +405,8 @@ class eft_fitter:
 
             # Put a legend to the right of the current axis
             ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5),fontsize=6,ncol=2)
-            plt.savefig("Graphs/stxs_scaling_vs_%s.pdf"%(param))
-            plt.savefig("Graphs/stxs_scaling_vs_%s.png"%(param))
+            plt.savefig("eftfitter2_Graphs/stxs_scaling_vs_%s.pdf"%(param))
+            plt.savefig("eftfitter2_Graphs/stxs_scaling_vs_%s.png"%(param))
 
             plt.clf()
             plt.cla()

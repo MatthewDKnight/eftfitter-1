@@ -47,6 +47,13 @@ def decomposeTerm(term):
 		del params[1]
 	else:
 		params[1] = params[1].replace(" ", "")
+
+	#add exception for cG and cA
+	exceptions = ["cG", "cA"]
+	for param in params:
+		if param in exceptions:
+			coefficient = coefficient * (4*np.pi)**2
+
 	return coefficient, params
 
 
@@ -176,7 +183,7 @@ def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.
         
         EFT_param_names[index1]='cWW'
         EFT_param_names[index2]='cB'
-                                                                                                                                           for row in rows:
+        for row in rows:
 		#initialise empty A and B matrices
 		A = np.zeros(len(PARAMS))
 		B = np.zeros((len(PARAMS), len(PARAMS)))
