@@ -92,6 +92,8 @@ class eft_fitter:
 
         data_set.err_mat = numpy.array(data_set.square_covariance)
         data_set.err_mat = linalg.inv(data_set.err_mat)
+	
+	#print(data_set.err_mat)
 
         self.data_sets.append(data_set)
 
@@ -112,8 +114,12 @@ class eft_fitter:
         #index2=self.EFT.keys().index('cWWPluscB_x03')
         index1=list(self.EFT).index('cWWMinuscB_x02')
         index2=list(self.EFT).index('cWWPluscB_x03')
-        cWW=0.5*(EFT_vector[index1]+EFT_vector[index2])
-        cB=0.5*(EFT_vector[index2]-EFT_vector[index1])
+	cWWMinuscB = EFT_vector[index1] / 100
+	cWWPluscB = EFT_vector[index2] / 1000
+        #cWW=0.5*(EFT_vector[index1]+EFT_vector[index2])
+        #cB=0.5*(EFT_vector[index2]-EFT_vector[index1])
+	cWW = 0.5 * (cWWMinuscB + cWWPluscB)
+	cB = 0.5 * (cWWPluscB - cWWMinuscB)
         EFT_vector[index1]=cWW
         EFT_vector[index2]=cB
         # note that some models may use a different naming for the SCALING function string (eg stage1 vs 1.1)
@@ -259,8 +265,8 @@ class eft_fitter:
       constr=0
 
       for i, M in enumerate(self.data_sets):
-       # predictions = self.getPredictions(i)
-	predictions = self.get_x(i)
+        predictions = self.getPredictions(i)
+	#predictions = self.get_x(i)
         measurements = self.getMeasurements(i)
 
 
@@ -283,6 +289,11 @@ class eft_fitter:
         init_CFG = [[e[0],float(e[1][1])] for e in POI_dict.items()]
         eft_keys = [i[0] for i in init_CFG]
         init = [i[1] for i in init_CFG]
+
+	#print(POI_dict)
+	#print(init_CFG)
+	#print(eft_keys)
+	#print(init)
 
         bounds = [(self.EFT[v][0][0],self.EFT[v][0][1]) for v in eft_keys]
         xbest = minimize(self.neg_log_likelihood,init,eft_keys,bounds=bounds)
@@ -329,8 +340,8 @@ class eft_fitter:
             mus = []
             for data_set_no in range(len(self.data_sets)):
                 self.EFT[param][1] = r
-                #predictions = self.getPredictions(data_set_no, True)
-		predictions = self.get_x(data_set_no, True)
+                predictions = self.getPredictions(data_set_no, True)
+		#predictions = self.get_x(data_set_no, True)
                 for prediction in predictions:
                     mus.append(prediction)
             scaling_functions.append(mus)
@@ -353,10 +364,9 @@ class eft_fitter:
         profiled_POIs = C_RES_PROF[1]
         scaling_functions = C_RES_FIXED[2]
 
-        self.makeSenseCheck(profiled_POIs, C_prof, C_fixed)
+        #self.makeSenseCheck(profiled_POIs, C_prof, C_fixed)
 
         fig, ax1 = plt.subplots()
-        ax1.plot(R,C_prof,color='black',linewidth=3,linestyle='-',label="Profiled")
         ax1.plot(R,C_prof,color='black',linewidth=3,linestyle='-',label="Profiled")
         ax1.plot(R,C_fixed,color='black',linewidth=3,linestyle='--',label="Scan")
 
@@ -443,4 +453,4 @@ if __name__=="__main__":
     # fitter.EFT = dict(E for E in filter(lambda x: x[0] not in ["cG_x05"], fitter.EFT.items()))
     # fitter.EFT = dict(E for E in filter(lambda x: x[0] in fitter.POIs, fitter.EFT.items()))
 
-    res = fitter.minimizer(rv={"cWWMinuscB_x02":5},constrained=True,params_list=["cWWMinuscB_x02"])
+    #res = fitter.minimizer(rv={"cWWMinuscB_x02":5},constrained=True,params_list=["cWWMinuscB_x02"])

@@ -182,7 +182,10 @@ def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.
         index2= EFT_param_names.index('cWWPluscB')
         
         EFT_param_names[index1]='cWW'
+	EFT_param_list[index1] = ["cWW", 0]
         EFT_param_names[index2]='cB'
+	EFT_param_list[index2] = ["cB", 0]
+
         for row in rows:
 		#initialise empty A and B matrices
 		A = np.zeros(len(PARAMS))
