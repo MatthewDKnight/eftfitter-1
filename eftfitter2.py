@@ -24,7 +24,8 @@ import parameters_config_EFT as config
 class eft_fitter:
     def __init__(self, config):   # for now lets just play, user interface later
         self.data_sets = [] #list of data sets
-        self.functions = initialiseScalingFunctions() #dictionary for scaling functions
+        self.functions, self.name_ordering = initialiseScalingFunctions() #dictionary for scaling functions
+
         self.decay_names = ["hmm", "hzg", "hzz", "hbb", "hww", "htt", "hgg", "hgluglu", "hcc", "tot"]
         self.EFT = config.PARAMS
         self.POIs = config.MYPARAMS
@@ -109,6 +110,20 @@ class eft_fitter:
         Find STXS predictions given the EFT parameters from the scaling functions.
         """
 
+	#EFT_copy = self.EFT.copy()
+	#EFT_copy["cWW"] = EFT_copy["cWWMinuscB_x02"]
+	#EFT_copy["cB"] = EFT_copy["cWWPluscB_x03"]
+	#cWWMinuscB = EFT_copy["cWWMinuscB_x02"][1] / 100
+	#cWWPluscB = EFT_copy["cWWPluscB_x03"][1] / 1000
+	#cWW = 0.5 * (cWWMinuscB + cWWPluscB)
+	#cB = 0.5 * (cWWPluscB - cWWMinuscB)
+	#EFT_copy["cWW"][1] = cWW
+	#EFT_copy["cB"][1] = cB
+	
+	#EFT_vector = []
+	#for name in self.name_ordering:
+	#	EFT_vector.append(EFT_copy[name][1])	
+
         EFT_vector=[self.EFT[i][1] for i in self.EFT.keys()]
         #index1=self.EFT.keys().index('cWWMinuscB_x02')
         #index2=self.EFT.keys().index('cWWPluscB_x03')
@@ -122,6 +137,7 @@ class eft_fitter:
 	cB = 0.5 * (cWWPluscB - cWWMinuscB)
         EFT_vector[index1]=cWW
         EFT_vector[index2]=cB
+
         # note that some models may use a different naming for the SCALING function string (eg stage1 vs 1.1)
         dataset = self.data_sets[data_set_no]
 
@@ -283,8 +299,11 @@ class eft_fitter:
             for i in range(len(params_list)):
                  self.EFT[params_list[i]][1]=rv[params_list[i]]
 
-        POI_dict = dict(E for E in filter(lambda x: x[0] not in params_list, self.EFT.items())) #takes out scanning param
-        POI_dict = dict(E for E in filter(lambda x: x[0] in fitter.POIs, POI_dict.items()))
+        #POI_dict = dict(E for E in filter(lambda x: x[0] not in params_list, self.EFT.items())) #takes out scanning param
+        #POI_dict = dict(E for E in filter(lambda x: x[0] in fitter.POIs, POI_dict.items()))
+	POI_dict = dict(E for E in filter(lambda x: x[0] in fitter.POIs, self.EFT.items()))
+	POI_dict = dict(E for E in filter(lambda x: x[0] not in params_list, POI_dict.items())) #takes out scanning param
+
 
         init_CFG = [[e[0],float(e[1][1])] for e in POI_dict.items()]
         eft_keys = [i[0] for i in init_CFG]
@@ -292,7 +311,7 @@ class eft_fitter:
 
 	#print(POI_dict)
 	#print(init_CFG)
-	#print(eft_keys)
+	print(eft_keys)
 	#print(init)
 
         bounds = [(self.EFT[v][0][0],self.EFT[v][0][1]) for v in eft_keys]
