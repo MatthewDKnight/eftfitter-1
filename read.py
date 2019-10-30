@@ -9,6 +9,8 @@ from parameters_config_EFT import PARAMS
 import string
 import re
 
+EXCLUDE_CROSS_TERMS = True
+
 def splitRow(string):
 	"""
 	Will split a string into terms that start with '+' or '-'.
@@ -129,8 +131,13 @@ def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.
                         
                         	param_index2 = EFT_param_names.index(params[1])
                        		scaling2 = EFT_param_list[param_index2][1] #what to scale the terms by "x02"
-                                                                                                                            
-                        	B[param_index1][param_index2] = coeff/10**(scaling1+scaling2)
+                                
+				if EXCLUDE_CROSS_TERMS:
+					if param_index1 == param_index2:
+						B[param_index1][param_index2] = coeff/10**(scaling1+scaling2)
+				else:
+					B[param_index1][param_index2] = coeff/10**(scaling1+scaling2)
+						
                         	#B[param_index2][param_index1] = coeff/10**(scaling1+scaling2) #make it symmetric
                         else:
                         	print("Something went wrong")

@@ -213,12 +213,10 @@ class eft_fitter:
 
         bounds = [(self.EFT[v][0][0],self.EFT[v][0][1]) for v in eft_keys]
         xbest = minimize(self.neg_log_likelihood,init,eft_keys,bounds=bounds)
-        #results = [[e[0],i] for e,i in zip(POI_dict.items(),xbest.x)]
 	results = [[eft_keys[i],xbest.x[i]] for i in range(len(eft_keys))]
 	
 	chi2 = 2 * xbest.fun	
 
-        #return results, 2*self.neg_log_likelihood([r[1] for r in results],eft_keys)
 	return results, chi2
 
     def scan_LH(self,param, R,do_profile=True):
