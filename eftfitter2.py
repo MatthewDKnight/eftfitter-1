@@ -28,12 +28,7 @@ class eft_fitter:
 
         self.decay_names = ["hmm", "hzg", "hzz", "hbb", "hww", "htt", "hgg", "hgluglu", "hcc", "tot"]
         self.EFT = config.PARAMS
-        self.POIs = config.MYPARAMS
-
-	fw = r.TFile.Open(config.COMBINE_WS)
-	self.w = fw.Get("w")
-	self.scalefunctionstr = config.SCALING_FUNC_STR
-	
+        self.POIs = config.MYPARAMS	
 
     def processDataSet(self,data_set):
         """
@@ -110,33 +105,19 @@ class eft_fitter:
         Find STXS predictions given the EFT parameters from the scaling functions.
         """
 
-	#EFT_copy = self.EFT.copy()
-	#EFT_copy["cWW"] = EFT_copy["cWWMinuscB_x02"]
-	#EFT_copy["cB"] = EFT_copy["cWWPluscB_x03"]
-	#cWWMinuscB = EFT_copy["cWWMinuscB_x02"][1] / 100
-	#cWWPluscB = EFT_copy["cWWPluscB_x03"][1] / 1000
-	#cWW = 0.5 * (cWWMinuscB + cWWPluscB)
-	#cB = 0.5 * (cWWPluscB - cWWMinuscB)
-	#EFT_copy["cWW"][1] = cWW
-	#EFT_copy["cB"][1] = cB
-	
-	#EFT_vector = []
-	#for name in self.name_ordering:
-	#	EFT_vector.append(EFT_copy[name][1])	
-
-        EFT_vector=[self.EFT[i][1] for i in self.EFT.keys()]
-        #index1=self.EFT.keys().index('cWWMinuscB_x02')
-        #index2=self.EFT.keys().index('cWWPluscB_x03')
-        index1=list(self.EFT).index('cWWMinuscB_x02')
-        index2=list(self.EFT).index('cWWPluscB_x03')
-	cWWMinuscB = EFT_vector[index1] / 100
-	cWWPluscB = EFT_vector[index2] / 1000
-        #cWW=0.5*(EFT_vector[index1]+EFT_vector[index2])
-        #cB=0.5*(EFT_vector[index2]-EFT_vector[index1])
+	EFT_copy = self.EFT.copy()
+	EFT_copy["cWW"] = [[0,0],0,0]
+	EFT_copy["cB"] = [[0,0],0,0]
+	cWWMinuscB = float(EFT_copy["cWWMinuscB_x02"][1]) / 100
+	cWWPluscB = float(EFT_copy["cWWPluscB_x03"][1]) / 1000
 	cWW = 0.5 * (cWWMinuscB + cWWPluscB)
 	cB = 0.5 * (cWWPluscB - cWWMinuscB)
-        EFT_vector[index1]=cWW
-        EFT_vector[index2]=cB
+	EFT_copy["cWW"][1] = cWW
+	EFT_copy["cB"][1] = cB
+	
+	EFT_vector = []
+	for name in self.name_ordering:
+		EFT_vector.append(EFT_copy[name][1])	
 
         # note that some models may use a different naming for the SCALING function string (eg stage1 vs 1.1)
         dataset = self.data_sets[data_set_no]
@@ -189,79 +170,6 @@ class eft_fitter:
         else:
             return [x[1][1] for x in dataset.X.items()]
 
-    def get_x(self,MINDEX,include_names=False):
-        """
-        Find STXS predictions given the EFT parameters from the scaling functions.
-        """
-        #fw = r.TFile.Open(config.COMBINE_WS)
-        #self.w = fw.Get("w")
-        #self.scalefunctionstr = config.SCALING_FUNC_STR
-
-        for param in self.POIs:
-	 # print("Setting %s as %f"%(param,self.EFT[param][1]))
-          self.w.var(param).setVal(self.EFT[param][1])
-
-	for param in self.POIs: 
-      	  xmin,xmax = self.EFT[param][0][0],self.EFT[param][0][1]
-          #print "Config parameter ", v, self.w.var(v)
-          self.w.var(param).setMin(xmin)
-          self.w.var(param).setMax(xmax)
-
-        # note that some models may use a different naming for the SCALING function string (eg stage1 vs 1.1)
-        model = self.data_sets[MINDEX]
-	model.decay = ""
-        old_scalefunctionstr = self.scalefunctionstr
-        try:
-            self.scalefunctionstr = model.scalefunctionstr
-        except:
-            pass
-
-        emptySet = r.RooArgSet()
-        for x in model.X.items():
-            names = x[1][0]
-            if not len(names):
-                names = [[1.,x[0]]]
-            tsc = 0.
-
-            for name in names:
-                weight = float(name[0])
-                name = name[1]
-                if "R_BR" in name: # in this case, we have a ratio of ratios model, expect parameter BR_hxx_BR_hyy - THIS IS VERY SPECIFIC TO SOME MODELS (eg STXS combination)!
-                    Bxx = name.split("BR_")[1]
-                    Byy = name.split("BR_")[2]
-                    nom  = self.w.function("%s_BR_%s"%(self.scalefunctionstr,Bxx)).getVal(r.RooArgSet())
-                    dnom = self.w.function("%s_BR_%s"%(self.scalefunctionstr,Byy)).getVal(r.RooArgSet())
-                    sc = nom/dnom
-                else:
-                    if len(model.decay):
-                        scaling_str = "%s_%s_%s_13TeV"%(self.scalefunctionstr,name,model.decay)
-                    else:
-                        scaling_str = "%s_%s_13TeV"%(self.scalefunctionstr,name)
-
-                # 1 - Look in the existing functions for it
-                    if scaling_str not in self.functions.keys():
-                        if (self.w.function(scaling_str)!=None):
-                            self.functions[scaling_str] = self.w.function(scaling_str)
-                        else:
-                            # Look for the splitting of prod * dec and make a new function
-                            print "Will need to make the scaler for ", name.split("_")
-                            prod_name  = "%s_%s"%(self.scalefunctionstr,"_".join(name.split("_")[0:-1]))
-                            decay_name = "%s_BR_%s"%(self.scalefunctionstr,name.split("_")[-1])
-                            print " Production name = ", prod_name
-                            print " Decay name = ", decay_name
-                            if (self.w.function(prod_name)==None):  sys.exit("Error - couldn't find any way to make scaling function for %s_%s"%(name,model.decay))
-                            if (self.w.function(decay_name)==None): sys.exit("Error - couldn't find any way to make scaling function for %s_%s"%(name,model.decay))
-                            print "Creating scaling process %s in model %s --> "%(name,model), scaling_str
-                            self.w.factory("prod::%s(%s,%s)"%(scaling_str,prod_name,decay_name))
-                            self.functions[scaling_str] = self.w.function(scaling_str)
-                    sc = self.functions[scaling_str].getVal(emptySet)
-		   # print(sc)
-      	        tsc+=weight*sc
-            model.X[x[0]][1]=tsc
-        self.scalefunctionstr = old_scalefunctionstr
-        if include_names: return [(x[0]+"_"+model.decay,x[1][1]) for x in model.X.items()]
-        else : return [x[1][1] for x in model.X.items()]
-
     def calculate_x(self):
       for i in range(len(self.data_sets)):
           self.getPredictions(i)
@@ -275,17 +183,14 @@ class eft_fitter:
     def neg_log_likelihood(self,x,*args):
       eft_keys = args[0]
 
-      for i in range (len(eft_keys)):
+      for i in range(len(eft_keys)):
           self.EFT[eft_keys[i]][1]=x[i]
 
       constr=0
 
       for i, M in enumerate(self.data_sets):
         predictions = self.getPredictions(i)
-	#predictions = self.get_x(i)
         measurements = self.getMeasurements(i)
-
-
 
         xarr  = numpy.array([xx-xx0 for xx,xx0 in zip(predictions,measurements)])
         xarrT = xarr.T
@@ -299,26 +204,22 @@ class eft_fitter:
             for i in range(len(params_list)):
                  self.EFT[params_list[i]][1]=rv[params_list[i]]
 
-        #POI_dict = dict(E for E in filter(lambda x: x[0] not in params_list, self.EFT.items())) #takes out scanning param
-        #POI_dict = dict(E for E in filter(lambda x: x[0] in fitter.POIs, POI_dict.items()))
 	POI_dict = dict(E for E in filter(lambda x: x[0] in fitter.POIs, self.EFT.items()))
 	POI_dict = dict(E for E in filter(lambda x: x[0] not in params_list, POI_dict.items())) #takes out scanning param
-
 
         init_CFG = [[e[0],float(e[1][1])] for e in POI_dict.items()]
         eft_keys = [i[0] for i in init_CFG]
         init = [i[1] for i in init_CFG]
 
-	#print(POI_dict)
-	#print(init_CFG)
-	print(eft_keys)
-	#print(init)
-
         bounds = [(self.EFT[v][0][0],self.EFT[v][0][1]) for v in eft_keys]
         xbest = minimize(self.neg_log_likelihood,init,eft_keys,bounds=bounds)
-        results = [[e[0],i] for e,i in zip(POI_dict.items(),xbest.x)]
+        #results = [[e[0],i] for e,i in zip(POI_dict.items(),xbest.x)]
+	results = [[eft_keys[i],xbest.x[i]] for i in range(len(eft_keys))]
+	
+	chi2 = 2 * xbest.fun	
 
-        return results, 2*self.neg_log_likelihood([r[1] for r in results],eft_keys)
+        #return results, 2*self.neg_log_likelihood([r[1] for r in results],eft_keys)
+	return results, chi2
 
     def scan_LH(self,param, R,do_profile=True):
         """
@@ -383,8 +284,6 @@ class eft_fitter:
         profiled_POIs = C_RES_PROF[1]
         scaling_functions = C_RES_FIXED[2]
 
-        #self.makeSenseCheck(profiled_POIs, C_prof, C_fixed)
-
         fig, ax1 = plt.subplots()
         ax1.plot(R,C_prof,color='black',linewidth=3,linestyle='-',label="Profiled")
         ax1.plot(R,C_fixed,color='black',linewidth=3,linestyle='--',label="Scan")
@@ -441,35 +340,9 @@ class eft_fitter:
             plt.cla()
             plt.close()
 
-    def makeSenseCheck(self, floated_POI_values, C_prof, C_fixed):
-        for i in range(len(C_prof)):
-            if C_prof[i] > C_fixed[i]:
-                print("WHYYYYYYYYYYYYYYYYY")
-                print(floated_POI_values[i])
-                print(i)
-                return
-        print("ahh its fine")
-
 if __name__=="__main__":
     fitter = eft_fitter(config)
     fitter.processDataSet(data)
 
-    # R = np.linspace(-12,16,100)
-    # LH,floated_POI_values,scaling_functions = fitter.scan_LH("cG_x05", R)
-    #
-    # plt.clf()
-    # plt.plot(R,np.array(scaling_functions).T[1][3].astype('f'))
-    # plt.savefig("fig.png")
-    #
-    # plt.clf()
-    # plt.plot(R,LH)
-    # plt.ylim(0,10)
-    # plt.savefig("fig1.png")
-    #
     for e in config.MYPARAMS:
         fitter.scan(e)
-    #
-    # fitter.EFT = dict(E for E in filter(lambda x: x[0] not in ["cG_x05"], fitter.EFT.items()))
-    # fitter.EFT = dict(E for E in filter(lambda x: x[0] in fitter.POIs, fitter.EFT.items()))
-
-    #res = fitter.minimizer(rv={"cWWMinuscB_x02":5},constrained=True,params_list=["cWWMinuscB_x02"])
