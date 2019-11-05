@@ -48,4 +48,4 @@ COMBINE_WS = "summer2019/result.root"  # <- output from text2workspace with scal
 COMBINE_WS="result.root"
 SCALING_FUNC_STR ="scaling"
 MYPARAMS = ["cG_x05","cA_x04","cu_x01","cHW_x02","cWWMinuscB_x02","cd_x01","cl"]  
-
+#MYPARAMS = ["cG_x05","cA_x04","cu_x01","cHW_x02","cd_x01","cl"] 

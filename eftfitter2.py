@@ -10,7 +10,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import matplotlib.cm as cm
 
-import ROOT as r
+#import ROOT as r
 
 from read import initialiseScalingFunctions
 
@@ -241,7 +241,7 @@ class eft_fitter:
         LH = []
         minll = 9999
         for r in R:
-            self.reset() #reset all predictions
+            #self.reset() #reset all predictions
             if do_profile:
                 res = self.minimizer(rv={param:r},constrained=True,params_list=[param])
                 if res[1] < minll:
