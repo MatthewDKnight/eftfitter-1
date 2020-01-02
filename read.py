@@ -3,11 +3,21 @@
 #	for row in file:
 #		rows.append(row)
 
+
+#from __future__ import print_function
+#import tensorflow as tf
+#import sys
+
 import numpy as np
 import parameters_config_EFT
 from parameters_config_EFT import PARAMS
 import string
 import re
+
+#functions, name_ordering = initialiseScalingFunctions() #dictionary for scaling functions
+
+#decay_names = ["hmm", "hzg", "hzz", "hbb", "hww", "htt", "hgg", "hgluglu", "hcc", "tot"]
+#self.EFT = config.PARAMS
 
 EXCLUDE_CROSS_TERMS = True
 
@@ -92,7 +102,7 @@ def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.
 		else: #if no scaling factor
 			scaling_factor = 0	
 		EFT_param_list.append([name, scaling_factor])
-        	EFT_param_names.append(name)
+		EFT_param_names.append(name)
                                                                                
         """
         cWW and cB do not appear independently in the list of parameters
@@ -108,10 +118,14 @@ def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.
 	name_ordering[index2] = 'cB'
 	EFT_param_list[index2] = ["cB", 0]
 
+	#print(EFT_param_names)
+	#print(EFT_param_list)
+	#print(name_ordering)
+
         for row in rows:
 		#initialise empty A and B matrices
 		A = np.zeros(len(PARAMS))
-		B = np.zeros((len(PARAMS), len(PARAMS)))
+		B = np.zeros((len(PARAMS), len(PARAMS)
 
 		terms = splitRow(row)
 		bin_name = terms[0].split(":")[0] #removes the ":1 " at end of string
@@ -143,6 +157,11 @@ def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.
                         	print("Something went wrong")
 		functions[bin_name] = [A, B]
 	return functions, name_ordering 
+
+
+
+
+
 
 if __name__=="__main__":
 	filenames = ["stage0_xs.txt", "decay.txt"]
