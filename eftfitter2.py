@@ -18,7 +18,8 @@ VERB=True #print debugging messages
 NSCANPOINTS=60 #determines granularity of the scan
 
 import matplotlib.pyplot as plt
-import HIG_17_031 as data
+#import HIG_17_031 as data
+import Higgs_PT as data
 import parameters_config_EFT as config
 
 class eft_fitter:
@@ -154,7 +155,7 @@ class eft_fitter:
                         decay_total= (1+np.dot(A_vector_decay_total, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix_decay_total, EFT_vector)))
                         sc = prod*decay/decay_total
 
-                    elif name in functions.keys():
+                    elif name in self.functions.keys():
                         A_vector=self.functions[name][0]
                         B_matrix=self.functions[name][1]
                         sc= 1+np.dot(A_vector, EFT_vector)+np.dot(np.transpose(EFT_vector), np.dot(B_matrix, EFT_vector))
@@ -206,6 +207,8 @@ class eft_fitter:
 
 	POI_dict = dict(E for E in filter(lambda x: x[0] in fitter.POIs, self.EFT.items()))
 	POI_dict = dict(E for E in filter(lambda x: x[0] not in params_list, POI_dict.items())) #takes out scanning param
+
+	#init_CFG = [[e[0],float(e[1][0][1])] for e in POI_dict.items()]
 
         init_CFG = [[e[0],float(e[1][1])] for e in POI_dict.items()]
         eft_keys = [i[0] for i in init_CFG]

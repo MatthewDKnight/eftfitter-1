@@ -61,14 +61,14 @@ def decomposeTerm(term):
 		params[1] = params[1].replace(" ", "")
 
 	#add exception for cG and cA
-	exceptions = ["cG", "cA"]
+	exceptions = ["cG","tcG", "cA"]
 	for param in params:
 		if param in exceptions:
 			coefficient = coefficient * (4*np.pi)**2
 
 	return coefficient, params
 
-def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.txt"]):
+def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.txt","Higgs_PT.txt"]):
 	"""
 	PARAMS is the dictionary of EFT parameters from
 	the EFT config file.
