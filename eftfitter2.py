@@ -77,7 +77,18 @@ class eft_fitter:
         error_vector = []
         for x in data_set.X.items():
          error_vector.append(x[1][3])
+	error_vector = np.array(error_vector)
 
+	#add errors from acceptance
+	fractional_errors = np.array([0.007480, 0.008186, 0.007495, 0.006546, 0.006415, 0.015138])
+	bin_values = []
+	for x in data_set.X.items():
+	 bin_values.append(x[1][2])
+	bin_values = np.array(bin_values)
+	
+	acceptance_errors = bin_values * fractional_errors
+	error_vector = np.sqrt(error_vector*error_vector + acceptance_errors*acceptance_errors)
+	
         # do some squarification and inverting
         data_set.nbins = len(data_set.X.items())
         v = data_set.correlation
@@ -88,9 +99,10 @@ class eft_fitter:
                       for j in range(data_set.nbins)]
 
         data_set.err_mat = numpy.array(data_set.square_covariance)
-        data_set.err_mat = linalg.inv(data_set.err_mat)
+	print(data_set.err_mat)
+	data_set.err_mat = linalg.inv(data_set.err_mat)
 	
-	#print(data_set.err_mat)
+	print(data_set.err_mat)
 
         self.data_sets.append(data_set)
 
