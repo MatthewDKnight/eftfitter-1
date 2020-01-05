@@ -80,7 +80,7 @@ class eft_fitter:
 	error_vector = np.array(error_vector)
 
 	#add errors from acceptance
-	fractional_errors = np.array([0.007480, 0.008186, 0.007495, 0.006546, 0.006415, 0.015138])
+	fractional_errors = np.array([0.007480, 0.008186, 0.007495, 0.006546, 0.006415, 0.015138, 0.007286, 0.008056, 0.008352, 0.011673, 0.011036])
 	bin_values = []
 	for x in data_set.X.items():
 	 bin_values.append(x[1][2])
