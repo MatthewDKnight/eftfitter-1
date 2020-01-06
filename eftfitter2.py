@@ -13,6 +13,7 @@ import matplotlib.cm as cm
 #import ROOT as r
 
 from read import initialiseScalingFunctions
+from read import readMaxAcceptances
 
 VERB=True #print debugging messages
 NSCANPOINTS=60 #determines granularity of the scan
@@ -80,11 +81,17 @@ class eft_fitter:
 	error_vector = np.array(error_vector)
 
 	#add errors from acceptance
-	fractional_errors = np.array([0.007480, 0.008186, 0.007495, 0.006546, 0.006415, 0.015138, 0.007286, 0.008056, 0.008352, 0.011673, 0.011036])
+	max_acceptances = readMaxAcceptances()
+
+	#fractional_errors = np.array([0.007480, 0.008186, 0.007495, 0.006546, 0.006415, 0.015138, 0.007286, 0.008056, 0.008352, 0.011673, 0.011036])
 	bin_values = []
+	fractional_errors = []
 	for x in data_set.X.items():
 	 bin_values.append(x[1][2])
+	 bin_name = x[0]
+	 fractional_errors.append(max_acceptances[bin_name]-1)
 	bin_values = np.array(bin_values)
+	fractional_errors = np.array(fractional_errors)
 	
 	acceptance_errors = bin_values * fractional_errors
 	error_vector = np.sqrt(error_vector*error_vector + acceptance_errors*acceptance_errors)
