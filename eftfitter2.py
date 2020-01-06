@@ -132,9 +132,9 @@ class eft_fitter:
 	for name in self.name_ordering:
 		EFT_vector.append(EFT_copy[name][1])	
 
-        # note that some models may use a different naming for the SCALING function string (eg stage1 vs 1.1)
+       # note that some models may use a different naming for the SCALING function string (eg stage1 vs 1.1)
         dataset = self.data_sets[data_set_no]
-
+ 
         for x in dataset.X.items():
             names = x[1][0]
             tsc = 0.
@@ -335,6 +335,7 @@ class eft_fitter:
             scalers = []
             for P in [ p[0] for p in scaling_functions[0] ]:
                 scalers.append(P)
+	    print(scaling_functions)
             for i,P in enumerate(scalers):
                 vals = [p[i][1] for p in scaling_functions]
                 ax1.plot(R,vals,styles[i//7], label=P)
