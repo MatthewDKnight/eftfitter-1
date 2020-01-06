@@ -125,7 +125,7 @@ def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.
         for row in rows:
 		#initialise empty A and B matrices
 		A = np.zeros(len(PARAMS))
-		B = np.zeros((len(PARAMS), len(PARAMS)
+		B = np.zeros((len(PARAMS), len(PARAMS)))
 
 		terms = splitRow(row)
 		bin_name = terms[0].split(":")[0] #removes the ":1 " at end of string
@@ -158,7 +158,13 @@ def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.
 		functions[bin_name] = [A, B]
 	return functions, name_ordering 
 
-
+def readMaxAcceptances():
+	max_acceptances = {}
+	with open("max_acceptances.txt", "r") as f:
+		for row in f:
+			bin_name, max_acceptance = row.split(":")
+			max_acceptances[bin_name] = float(max_acceptance)
+	return max_acceptances
 
 
 
@@ -166,4 +172,4 @@ def initialiseScalingFunctions(PARAMS=PARAMS, filenames=["stage0_xs.txt","decay.
 if __name__=="__main__":
 	filenames = ["stage0_xs.txt", "decay.txt"]
 	functions, name_ordering = initialiseScalingFunctions(PARAMS, filenames)
-                                                               
+        max_acceptances = readMaxAcceptances()                                                       
